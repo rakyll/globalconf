@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	defaultConfigFileName = "config.init"
+	defaultConfigFileName = "config.ini"
 )
 
 var flags map[string]*flag.FlagSet = make(map[string]*flag.FlagSet)
