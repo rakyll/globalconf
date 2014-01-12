@@ -123,12 +123,11 @@ func TestParse_GlobalAndCustomOverwrite(t *testing.T) {
 }
 
 func parse(t *testing.T, filename string) *GlobalConf {
-	flag.Parse()
-	conf, err := NewWithPath(filename)
+	conf, err := NewWithFilename(filename)
 	if err != nil {
 		t.Error(err)
 	}
-	conf.Parse()
+	conf.ParseAll()
 	return conf
 }
 

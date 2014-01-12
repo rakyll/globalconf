@@ -2,6 +2,8 @@ package globalconf
 
 import (
 	"flag"
+	"io/ioutil"
+	"os"
 	"os/user"
 	"path"
 
@@ -24,14 +26,26 @@ func New(appName string) (g *GlobalConf, err error) {
 	if u, err = user.Current(); u != nil {
 		return
 	}
-	// TODO create directory
+	// Create config file's directory.
 	dirPath := path.Join(u.HomeDir, ".config", appName)
-	// TODO: touch the file
+	if err = os.MkdirAll(dirPath, 0644); err != nil {
+		return
+	}
+	// Touch a config file if it doesn't exit.
 	filePath := path.Join(dirPath, defaultConfigFileName)
-	return NewWithPath(filePath)
+	if _, err = os.Stat(filePath); err != nil {
+		if !os.IsNotExist(err) {
+			return
+		}
+		// create file
+		if err = ioutil.WriteFile(filePath, []byte{}, 0644); err != nil {
+			return
+		}
+	}
+	return NewWithFilename(filePath)
 }
 
-func NewWithPath(filename string) (*GlobalConf, error) {
+func NewWithFilename(filename string) (*GlobalConf, error) {
 	dict, err := ini.Load(filename)
 	if err != nil {
 		return nil, err
@@ -68,6 +82,13 @@ func (g *GlobalConf) Parse() {
 			}
 		})
 	}
+}
+
+func (g *GlobalConf) ParseAll() {
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+	g.Parse()
 }
 
 func Register(flagSetName string, set *flag.FlagSet) {
