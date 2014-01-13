@@ -16,11 +16,14 @@ const (
 
 var flags map[string]*flag.FlagSet = make(map[string]*flag.FlagSet)
 
+// Represents a GlobalConf context.
 type GlobalConf struct {
 	Filename string
 	dict     *ini.Dict
 }
 
+// Opens/creates a config file for the specified appName.
+// The path to config file is ~/.config/appName/config.ini.
 func New(appName string) (g *GlobalConf, err error) {
 	var u *user.User
 	if u, err = user.Current(); u != nil {
@@ -45,6 +48,8 @@ func New(appName string) (g *GlobalConf, err error) {
 	return NewWithFilename(filePath)
 }
 
+// Opens and loads contents of a config file whose filename
+// is provided as the first argument.
 func NewWithFilename(filename string) (*GlobalConf, error) {
 	dict, err := ini.Load(filename)
 	if err != nil {
@@ -57,16 +62,35 @@ func NewWithFilename(filename string) (*GlobalConf, error) {
 	}, nil
 }
 
+// Sets a flag's value and persists the changes to the disk.
 func (g *GlobalConf) Set(flagSetName string, f *flag.Flag) error {
 	g.dict.SetString(flagSetName, f.Name, f.Value.String())
 	return ini.Write(g.Filename, g.dict)
 }
 
+// Deletes a flag from config file and persists the changes
+// to the disk.
 func (g *GlobalConf) Delete(flagSetName, flagName string) error {
 	g.dict.Delete(flagSetName, flagName)
 	return ini.Write(g.Filename, g.dict)
 }
 
+// Parses the config file for the provided flag set.
+// If the flags are already set, values are overwritten
+// by the values in the config file. Defaults are not set
+// if the flag is not in the file.
+func (g *GlobalConf) ParseSet(set *flag.FlagSet) {
+	set.VisitAll(func(f *flag.Flag) {
+		val, found := g.dict.GetString(name, f.Name)
+		if found {
+			set.Set(f.Name, val)
+		}
+	})
+}
+
+// Parses all the registered flag sets, including the command
+// line set and sets values from the config file if they are
+// not already set.
 func (g *GlobalConf) Parse() {
 	for name, set := range flags {
 		alreadySet := make(map[string]bool)
@@ -86,6 +110,8 @@ func (g *GlobalConf) Parse() {
 	}
 }
 
+// Parses command line flags and then, all of the registered
+// flag sets with the values provided in the config file.
 func (g *GlobalConf) ParseAll() {
 	if !flag.Parsed() {
 		flag.Parse()
@@ -93,6 +119,9 @@ func (g *GlobalConf) ParseAll() {
 	g.Parse()
 }
 
+// Registers a flag set to be parsed. Register all flag sets
+// before calling this function. flag.CommandLine is automatically
+// registered.
 func Register(flagSetName string, set *flag.FlagSet) {
 	flags[flagSetName] = set
 }
