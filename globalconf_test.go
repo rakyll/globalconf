@@ -2,6 +2,7 @@ package globalconf
 
 import (
 	"flag"
+	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -122,6 +123,33 @@ func TestParse_GlobalAndCustomOverwrite(t *testing.T) {
 	}
 }
 
+func TestSet(t *testing.T) {
+	resetForTesting()
+	file, _ := ioutil.TempFile("", "")
+	conf := parse(t, file.Name())
+	conf.Set("default", &flag.Flag{Name: "a", Value: newFlagValue("test")})
+
+	flagA := flag.String("a", "", "")
+	parse(t, file.Name())
+	if *flagA != "test" {
+		t.Errorf("flagA found %v, expected 'test'", *flagA)
+	}
+}
+
+func TestDelete(t *testing.T) {
+	resetForTesting()
+	file, _ := ioutil.TempFile("", "")
+	conf := parse(t, file.Name())
+	conf.Set("default", &flag.Flag{Name: "a", Value: newFlagValue("test")})
+	conf.Delete("default", "a")
+
+	flagA := flag.String("a", "", "")
+	parse(t, file.Name())
+	if *flagA != "" {
+		t.Errorf("flagNewA found %v, expected ''", *flagA)
+	}
+}
+
 func parse(t *testing.T, filename string) *GlobalConf {
 	conf, err := NewWithFilename(filename)
 	if err != nil {
@@ -135,4 +163,21 @@ func parse(t *testing.T, filename string) *GlobalConf {
 func resetForTesting(args ...string) {
 	os.Args = append([]string{"cmd"}, args...)
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+}
+
+type flagValue struct {
+	str string
+}
+
+func (f *flagValue) String() string {
+	return f.str
+}
+
+func (f *flagValue) Set(value string) error {
+	f.str = value
+	return nil
+}
+
+func newFlagValue(val string) *flagValue {
+	return &flagValue{str: val}
 }

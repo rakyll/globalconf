@@ -17,7 +17,7 @@ const (
 var flags map[string]*flag.FlagSet = make(map[string]*flag.FlagSet)
 
 type GlobalConf struct {
-	FilePath string
+	Filename string
 	dict     *ini.Dict
 }
 
@@ -52,17 +52,19 @@ func NewWithFilename(filename string) (*GlobalConf, error) {
 	}
 	Register("default", flag.CommandLine)
 	return &GlobalConf{
-		FilePath: filename,
+		Filename: filename,
 		dict:     &dict,
 	}, nil
 }
 
-func (g *GlobalConf) Set() {
-	panic("not impleemented")
+func (g *GlobalConf) Set(flagSetName string, f *flag.Flag) error {
+	g.dict.SetString(flagSetName, f.Name, f.Value.String())
+	return ini.Write(g.Filename, g.dict)
 }
 
-func (g *GlobalConf) Delete() {
-	panic("not impleemented")
+func (g *GlobalConf) Delete(flagSetName, flagName string) error {
+	g.dict.Delete(flagSetName, flagName)
+	return ini.Write(g.Filename, g.dict)
 }
 
 func (g *GlobalConf) Parse() {
