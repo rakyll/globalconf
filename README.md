@@ -1,5 +1,7 @@
 # globalconf
 
+[![Build Status](https://travis-ci.org/rakyll/globalconf.png?branch=master)](https://travis-ci.org/rakyll/globalconf)
+
 Effortlessly persist/retrieve flags of your Golang programs. If you need global configuration instead of requiring user always to set command line flags, you are looking at the right package.
 
 ## Usage
