@@ -79,9 +79,9 @@ func (g *GlobalConf) Delete(flagSetName, flagName string) error {
 // If the flags are already set, values are overwritten
 // by the values in the config file. Defaults are not set
 // if the flag is not in the file.
-func (g *GlobalConf) ParseSet(set *flag.FlagSet) {
+func (g *GlobalConf) ParseSet(flagSetName string, set *flag.FlagSet) {
 	set.VisitAll(func(f *flag.Flag) {
-		val, found := g.dict.GetString(name, f.Name)
+		val, found := g.dict.GetString(flagSetName, f.Name)
 		if found {
 			set.Set(f.Name, val)
 		}
