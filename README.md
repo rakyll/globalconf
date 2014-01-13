@@ -6,23 +6,29 @@ Effortlessly persist/retrieve flags of your Golang programs. If you need global 
 
 ## Usage
 
-	import "github.com/rakyll/globalconf"
-	
+~~~ go
+import "github.com/rakyll/globalconf"
+~~~
+    
 ### Loading a config file
 
 By default, globalconf provides you a config file under `~/.config/<yourappname>/config.ini`. If you don't prefer the default location you can load from a specified path as well.
 
-	globalconf.New("appname") // loads from ~/.config/<appname>/config.ini
-	globalconf.NewWithFilename("/path/to/config/file")
+~~~ go
+globalconf.New("appname") // loads from ~/.config/<appname>/config.ini
+globalconf.NewWithFilename("/path/to/config/file")
+~~~
 	
 ### Parsing flag values
 
 `globalconf` populates flags with data in the config file if they are not already set.
 
-	var (
-		flagName    = flag.String("name", "", "Name of the person.")
-		flagAddress = flag.String("addr", "", "Address of the person.")
-	)
+~~~ go
+var (
+	flagName    = flag.String("name", "", "Name of the person.")
+	flagAddress = flag.String("addr", "", "Address of the person.")
+)
+~~~
 	
 Assume the configuaration file to be loaded contains the following lines.
 
@@ -30,18 +36,21 @@ Assume the configuaration file to be loaded contains the following lines.
 	addr = Brandschenkestrasse 110, 8002
 	
 And your program is being started, `$ myapp -name=Jane`
-	
-	conf, err := globalconf.New("myapp")
-	conf.ParseAll()
-	
+~~~ go
+conf, err := globalconf.New("myapp")
+conf.ParseAll()
+~~~
+
 `*flagName` is going to be equal to `Jane`, whereas `*flagAddress` is `Brandschenkestrasse 110, 8002`, what is provided in the configuration file.
 
 ### Custom flag sets
 
 Custom flagsets are supported, but required registration before parse is done. Command line flags are automatically registered.
 
-	globalconf.Register("termopts", termOptsFlagSet)
-	conf.ParseAll() // parses command line and all registered flag sets
+~~~ go
+globalconf.Register("termopts", termOptsFlagSet)
+conf.ParseAll() // parses command line and all registered flag sets
+~~~
 
 Custom flag set values should be provided in their own segment. Getting back to the sample ini config file, termopts values will have their own segment.
 
@@ -56,18 +65,22 @@ Custom flag set values should be provided in their own segment. Getting back to 
 
 Modifications are persisted as long as you set a new flag.
 
-	f := &flag.Flag{Name: "name", Value: val}
-	conf.Set("", f) // if you are modifying a command line flag
+~~~ go
+f := &flag.Flag{Name: "name", Value: val}
+conf.Set("", f) // if you are modifying a command line flag
 	
-	f := &flag.Flag{Name: "color", Value: val}
-	conf.Set("termopts", color) // if you are modifying a custom flag set flag
+f := &flag.Flag{Name: "color", Value: val}
+conf.Set("termopts", color) // if you are modifying a custom flag set flag
+~~~
 
 ### Deleting stored flags
 
 Deletions are persisted as long as you delete a flag's value.
 
-	conf.Delete("", "name") // removes command line flag "name"s value from config
-	conf.Delete("termopts", "color") // removes "color"s value from the custom flag set
+~~~ go
+conf.Delete("", "name") // removes command line flag "name"s value from config
+conf.Delete("termopts", "color") // removes "color"s value from the custom flag set
+~~~
 
 ## License
 
