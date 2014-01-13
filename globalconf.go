@@ -50,7 +50,7 @@ func NewWithFilename(filename string) (*GlobalConf, error) {
 	if err != nil {
 		return nil, err
 	}
-	Register("default", flag.CommandLine)
+	Register("", flag.CommandLine)
 	return &GlobalConf{
 		Filename: filename,
 		dict:     &dict,

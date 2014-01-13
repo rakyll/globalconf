@@ -127,7 +127,7 @@ func TestSet(t *testing.T) {
 	resetForTesting()
 	file, _ := ioutil.TempFile("", "")
 	conf := parse(t, file.Name())
-	conf.Set("default", &flag.Flag{Name: "a", Value: newFlagValue("test")})
+	conf.Set("", &flag.Flag{Name: "a", Value: newFlagValue("test")})
 
 	flagA := flag.String("a", "", "")
 	parse(t, file.Name())
@@ -140,8 +140,8 @@ func TestDelete(t *testing.T) {
 	resetForTesting()
 	file, _ := ioutil.TempFile("", "")
 	conf := parse(t, file.Name())
-	conf.Set("default", &flag.Flag{Name: "a", Value: newFlagValue("test")})
-	conf.Delete("default", "a")
+	conf.Set("", &flag.Flag{Name: "a", Value: newFlagValue("test")})
+	conf.Delete("", "a")
 
 	flagA := flag.String("a", "", "")
 	parse(t, file.Name())
