@@ -31,7 +31,7 @@ func New(appName string) (g *GlobalConf, err error) {
 	}
 	// Create config file's directory.
 	dirPath := path.Join(u.HomeDir, ".config", appName)
-	if err = os.MkdirAll(dirPath, 0644); err != nil {
+	if err = os.MkdirAll(dirPath, 0755); err != nil {
 		return
 	}
 	// Touch a config file if it doesn't exit.
