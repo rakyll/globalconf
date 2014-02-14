@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"strings"
 
 	ini "github.com/rakyll/goini"
 )
@@ -18,8 +19,9 @@ var flags map[string]*flag.FlagSet = make(map[string]*flag.FlagSet)
 
 // Represents a GlobalConf context.
 type GlobalConf struct {
-	Filename string
-	dict     *ini.Dict
+	Filename  string
+	dict      *ini.Dict
+	envPrefix string
 }
 
 // Opens/creates a config file for the specified appName.
@@ -62,6 +64,21 @@ func NewWithFilename(filename string) (*GlobalConf, error) {
 	}, nil
 }
 
+// Opens and loads contents of a config file.
+// Environment variables will override the config.
+// Example:
+//  NewWithEnv("conf.ini", "MYAPP_")
+// MYAPP_VAR=val will override var = otherval in config file.
+func NewWithEnv(filename, envPrefix string) (*GlobalConf, error) {
+	d, err := NewWithFilename(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	d.envPrefix = envPrefix
+	return d, nil
+}
+
 // Sets a flag's value and persists the changes to the disk.
 func (g *GlobalConf) Set(flagSetName string, f *flag.Flag) error {
 	g.dict.SetString(flagSetName, f.Name, f.Value.String())
@@ -81,6 +98,12 @@ func (g *GlobalConf) Delete(flagSetName, flagName string) error {
 // if the flag is not in the file.
 func (g *GlobalConf) ParseSet(flagSetName string, set *flag.FlagSet) {
 	set.VisitAll(func(f *flag.Flag) {
+		val := g.getEnv(flagSetName, f.Name)
+		if val != "" {
+			set.Set(f.Name, val)
+			return
+		}
+
 		val, found := g.dict.GetString(flagSetName, f.Name)
 		if found {
 			set.Set(f.Name, val)
@@ -102,6 +125,13 @@ func (g *GlobalConf) Parse() {
 			if alreadySet[f.Name] {
 				return
 			}
+
+			val := g.getEnv(name, f.Name)
+			if val != "" {
+				set.Set(f.Name, val)
+				return
+			}
+
 			val, found := g.dict.GetString(name, f.Name)
 			if found {
 				set.Set(f.Name, val)
@@ -117,6 +147,16 @@ func (g *GlobalConf) ParseAll() {
 		flag.Parse()
 	}
 	g.Parse()
+}
+
+// Looks up variable in environment
+func (g *GlobalConf) getEnv(flagSetName, flagName string) string {
+	// Append a _ to flagSetName if it exists.
+	if flagSetName != "" {
+		flagSetName += "_"
+	}
+	envKey := strings.ToUpper(g.envPrefix + flagSetName + flagName)
+	return os.Getenv(envKey)
 }
 
 // Registers a flag set to be parsed. Register all flag sets

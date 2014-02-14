@@ -7,13 +7,24 @@ import (
 	"testing"
 )
 
+const EnvPrefix = "CONFTEST_"
+
 func TestParse_Global(t *testing.T) {
 	resetForTesting("")
+
+	os.Setenv(EnvPrefix+"D", "EnvD")
+	os.Setenv(EnvPrefix+"E", "true")
+	os.Setenv(EnvPrefix+"F", "5.5")
+
 	flagA := flag.Bool("a", false, "")
 	flagB := flag.Float64("b", 0.0, "")
 	flagC := flag.String("c", "", "")
 
-	parse(t, "./testdata/global.ini")
+	flagD := flag.String("d", "", "")
+	flagE := flag.Bool("e", false, "")
+	flagF := flag.Float64("f", 0.0, "")
+
+	parseWithEnv(t, "./testdata/global.ini")
 	if !*flagA {
 		t.Errorf("flagA found %v, expected true", *flagA)
 	}
@@ -22,6 +33,15 @@ func TestParse_Global(t *testing.T) {
 	}
 	if *flagC != "Hello world" {
 		t.Errorf("flagC found %v, expected 'Hello world'", *flagC)
+	}
+	if *flagD != "EnvD" {
+		t.Errorf("flagD found %v, expected 'EnvD'", *flagD)
+	}
+	if !*flagE {
+		t.Errorf("flagE found %v, expected true", *flagE)
+	}
+	if *flagF != 5.5 {
+		t.Errorf("flagF found %v, expected 5.5", *flagF)
 	}
 }
 
@@ -37,19 +57,26 @@ func TestParse_GlobalOverwrite(t *testing.T) {
 
 func TestParse_Custom(t *testing.T) {
 	resetForTesting("")
+
+	os.Setenv(EnvPrefix+"CUSTOM_"+"E", "Hello Env")
+
 	flagB := flag.Float64("b", 5.0, "")
 
 	name := "custom"
 	custom := flag.NewFlagSet(name, flag.ExitOnError)
 	flagD := custom.String("d", "dd", "")
+	flagE := custom.String("e", "ee", "")
 
 	Register(name, custom)
-	parse(t, "./testdata/custom.ini")
+	parseWithEnv(t, "./testdata/custom.ini")
 	if *flagB != 5.0 {
 		t.Errorf("flagB found %v, expected 5.0", *flagB)
 	}
 	if *flagD != "Hello d" {
 		t.Errorf("flagD found %v, expected 'Hello d'", *flagD)
+	}
+	if *flagE != "Hello Env" {
+		t.Errorf("flagD found %v, expected 'Hello Env'", *flagE)
 	}
 }
 
@@ -159,8 +186,18 @@ func parse(t *testing.T, filename string) *GlobalConf {
 	return conf
 }
 
+func parseWithEnv(t *testing.T, filename string) *GlobalConf {
+	conf, err := NewWithEnv(filename, EnvPrefix)
+	if err != nil {
+		t.Error(err)
+	}
+	conf.ParseAll()
+	return conf
+}
+
 // Resets os.Args and the default flag set.
 func resetForTesting(args ...string) {
+	os.Clearenv()
 	os.Args = append([]string{"cmd"}, args...)
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 }

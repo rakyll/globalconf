@@ -17,6 +17,7 @@ By default, globalconf provides you a config file under `~/.config/<yourappname>
 ~~~ go
 globalconf.New("appname") // loads from ~/.config/<appname>/config.ini
 globalconf.NewWithFilename("/path/to/config/file")
+globalconf.NewWithEnv("/path/to/config/file", "APPCONF\_")
 ~~~
 	
 ### Parsing flag values
@@ -30,7 +31,7 @@ var (
 )
 ~~~
 	
-Assume the configuaration file to be loaded contains the following lines.
+Assume the configuration file to be loaded contains the following lines.
 
 	name = Burcu
 	addr = Brandschenkestrasse 110, 8002
@@ -60,6 +61,25 @@ Custom flag set values should be provided in their own segment. Getting back to 
 	[termopts]
 	color = true
 	background = ff0000
+
+### Environment variables
+
+If configured with `globalconf.NewWithEnv`, environment variables will take precedence over values in the configuration file.
+Command line flags, however, will override the environment variables.
+
+~~~go
+conf, err := globalconf.NewWithEnv("/path/to/config", "APPCONF\_")
+conf.ParseAll()
+~~~
+
+With environment variables:
+	APPCONF_NAME = Burcu
+
+and configuration:
+	name = Jane
+	addr = Brandschenkestrasse 110, 8002
+
+`name` will be set to "burcu" and `addr` will be set to "Brandschenkestrasse 110, 8002".
 
 ### Modifying stored flags
 
