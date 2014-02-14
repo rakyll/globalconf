@@ -7,11 +7,12 @@ import (
 	"testing"
 )
 
-const EnvPrefix = "CONFTEST_"
+const EnvTestPrefix = "CONFTEST_"
 
 func TestParse_Global(t *testing.T) {
 	resetForTesting("")
 
+	EnvPrefix = EnvTestPrefix
 	os.Setenv(EnvPrefix+"D", "EnvD")
 	os.Setenv(EnvPrefix+"E", "true")
 	os.Setenv(EnvPrefix+"F", "5.5")
@@ -24,7 +25,7 @@ func TestParse_Global(t *testing.T) {
 	flagE := flag.Bool("e", false, "")
 	flagF := flag.Float64("f", 0.0, "")
 
-	parseWithEnv(t, "./testdata/global.ini")
+	parse(t, "./testdata/global.ini")
 	if !*flagA {
 		t.Errorf("flagA found %v, expected true", *flagA)
 	}
@@ -58,7 +59,8 @@ func TestParse_GlobalOverwrite(t *testing.T) {
 func TestParse_Custom(t *testing.T) {
 	resetForTesting("")
 
-	os.Setenv(EnvPrefix+"CUSTOM_"+"E", "Hello Env")
+	EnvPrefix = EnvTestPrefix
+	os.Setenv(EnvPrefix+"CUSTOM_E", "Hello Env")
 
 	flagB := flag.Float64("b", 5.0, "")
 
@@ -68,7 +70,7 @@ func TestParse_Custom(t *testing.T) {
 	flagE := custom.String("e", "ee", "")
 
 	Register(name, custom)
-	parseWithEnv(t, "./testdata/custom.ini")
+	parse(t, "./testdata/custom.ini")
 	if *flagB != 5.0 {
 		t.Errorf("flagB found %v, expected 5.0", *flagB)
 	}
@@ -76,7 +78,7 @@ func TestParse_Custom(t *testing.T) {
 		t.Errorf("flagD found %v, expected 'Hello d'", *flagD)
 	}
 	if *flagE != "Hello Env" {
-		t.Errorf("flagD found %v, expected 'Hello Env'", *flagE)
+		t.Errorf("flagE found %v, expected 'Hello Env'", *flagE)
 	}
 }
 
@@ -186,18 +188,11 @@ func parse(t *testing.T, filename string) *GlobalConf {
 	return conf
 }
 
-func parseWithEnv(t *testing.T, filename string) *GlobalConf {
-	conf, err := NewWithEnv(filename, EnvPrefix)
-	if err != nil {
-		t.Error(err)
-	}
-	conf.ParseAll()
-	return conf
-}
-
 // Resets os.Args and the default flag set.
 func resetForTesting(args ...string) {
 	os.Clearenv()
+	EnvPrefix = ""
+
 	os.Args = append([]string{"cmd"}, args...)
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 }

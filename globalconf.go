@@ -15,13 +15,18 @@ const (
 	defaultConfigFileName = "config.ini"
 )
 
+// If not empty, environment variables will override the config.
+// Example:
+//   globalconf.EnvPrefix = "MYAPP_"
+// MYAPP_VAR=val will override var = otherval in config file.
+var EnvPrefix string = ""
+
 var flags map[string]*flag.FlagSet = make(map[string]*flag.FlagSet)
 
 // Represents a GlobalConf context.
 type GlobalConf struct {
-	Filename  string
-	dict      *ini.Dict
-	envPrefix string
+	Filename string
+	dict     *ini.Dict
 }
 
 // Opens/creates a config file for the specified appName.
@@ -64,21 +69,6 @@ func NewWithFilename(filename string) (*GlobalConf, error) {
 	}, nil
 }
 
-// Opens and loads contents of a config file.
-// Environment variables will override the config.
-// Example:
-//  NewWithEnv("conf.ini", "MYAPP_")
-// MYAPP_VAR=val will override var = otherval in config file.
-func NewWithEnv(filename, envPrefix string) (*GlobalConf, error) {
-	d, err := NewWithFilename(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	d.envPrefix = envPrefix
-	return d, nil
-}
-
 // Sets a flag's value and persists the changes to the disk.
 func (g *GlobalConf) Set(flagSetName string, f *flag.Flag) error {
 	g.dict.SetString(flagSetName, f.Name, f.Value.String())
@@ -98,7 +88,7 @@ func (g *GlobalConf) Delete(flagSetName, flagName string) error {
 // if the flag is not in the file.
 func (g *GlobalConf) ParseSet(flagSetName string, set *flag.FlagSet) {
 	set.VisitAll(func(f *flag.Flag) {
-		val := g.getEnv(flagSetName, f.Name)
+		val := getEnv(flagSetName, f.Name)
 		if val != "" {
 			set.Set(f.Name, val)
 			return
@@ -126,7 +116,7 @@ func (g *GlobalConf) Parse() {
 				return
 			}
 
-			val := g.getEnv(name, f.Name)
+			val := getEnv(name, f.Name)
 			if val != "" {
 				set.Set(f.Name, val)
 				return
@@ -150,12 +140,16 @@ func (g *GlobalConf) ParseAll() {
 }
 
 // Looks up variable in environment
-func (g *GlobalConf) getEnv(flagSetName, flagName string) string {
+func getEnv(flagSetName, flagName string) string {
+	// If we haven't set an EnvPrefix, don't lookup vals in the ENV
+	if EnvPrefix == "" {
+		return ""
+	}
 	// Append a _ to flagSetName if it exists.
 	if flagSetName != "" {
 		flagSetName += "_"
 	}
-	envKey := strings.ToUpper(g.envPrefix + flagSetName + flagName)
+	envKey := strings.ToUpper(EnvPrefix + flagSetName + flagName)
 	return os.Getenv(envKey)
 }
 
