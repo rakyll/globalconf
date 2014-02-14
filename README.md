@@ -17,7 +17,7 @@ By default, globalconf provides you a config file under `~/.config/<yourappname>
 ~~~ go
 globalconf.New("appname") // loads from ~/.config/<appname>/config.ini
 globalconf.NewWithFilename("/path/to/config/file")
-globalconf.NewWithEnv("/path/to/config/file", "APPCONF\_")
+globalconf.NewWithEnv("/path/to/config/file", "APPCONF_")
 ~~~
 	
 ### Parsing flag values
@@ -68,7 +68,7 @@ If configured with `globalconf.NewWithEnv`, environment variables will take prec
 Command line flags, however, will override the environment variables.
 
 ~~~go
-conf, err := globalconf.NewWithEnv("/path/to/config", "APPCONF\_")
+conf, err := globalconf.NewWithEnv("/path/to/config", "APPCONF_")
 conf.ParseAll()
 ~~~
 
