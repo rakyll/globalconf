@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"strings"
 
 	ini "github.com/rakyll/goini"
 )
@@ -13,6 +14,12 @@ import (
 const (
 	defaultConfigFileName = "config.ini"
 )
+
+// If not empty, environment variables will override the config.
+// Example:
+//   globalconf.EnvPrefix = "MYAPP_"
+// MYAPP_VAR=val will override var = otherval in config file.
+var EnvPrefix string = ""
 
 var flags map[string]*flag.FlagSet = make(map[string]*flag.FlagSet)
 
@@ -81,6 +88,12 @@ func (g *GlobalConf) Delete(flagSetName, flagName string) error {
 // if the flag is not in the file.
 func (g *GlobalConf) ParseSet(flagSetName string, set *flag.FlagSet) {
 	set.VisitAll(func(f *flag.Flag) {
+		val := getEnv(flagSetName, f.Name)
+		if val != "" {
+			set.Set(f.Name, val)
+			return
+		}
+
 		val, found := g.dict.GetString(flagSetName, f.Name)
 		if found {
 			set.Set(f.Name, val)
@@ -102,6 +115,13 @@ func (g *GlobalConf) Parse() {
 			if alreadySet[f.Name] {
 				return
 			}
+
+			val := getEnv(name, f.Name)
+			if val != "" {
+				set.Set(f.Name, val)
+				return
+			}
+
 			val, found := g.dict.GetString(name, f.Name)
 			if found {
 				set.Set(f.Name, val)
@@ -117,6 +137,20 @@ func (g *GlobalConf) ParseAll() {
 		flag.Parse()
 	}
 	g.Parse()
+}
+
+// Looks up variable in environment
+func getEnv(flagSetName, flagName string) string {
+	// If we haven't set an EnvPrefix, don't lookup vals in the ENV
+	if EnvPrefix == "" {
+		return ""
+	}
+	// Append a _ to flagSetName if it exists.
+	if flagSetName != "" {
+		flagSetName += "_"
+	}
+	envKey := strings.ToUpper(EnvPrefix + flagSetName + flagName)
+	return os.Getenv(envKey)
 }
 
 // Registers a flag set to be parsed. Register all flag sets
