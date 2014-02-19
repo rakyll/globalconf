@@ -70,7 +70,7 @@ Command line flags, however, will override the environment variables.
 
 ~~~go
 globalconf.EnvPrefix = "MYAPP_"
-conf, err := globalconf.NewWithFilename("/path/to/config", "APPCONF_")
+conf, err := globalconf.NewWithFilename("/path/to/config")
 conf.ParseAll()
 ~~~
 
