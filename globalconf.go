@@ -33,7 +33,7 @@ type GlobalConf struct {
 // The path to config file is ~/.config/appName/config.ini.
 func New(appName string) (g *GlobalConf, err error) {
 	var u *user.User
-	if u, err = user.Current(); u != nil {
+	if u, err = user.Current(); u == nil {
 		return
 	}
 	// Create config file's directory.
