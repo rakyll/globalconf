@@ -9,6 +9,28 @@ import (
 
 const EnvTestPrefix = "CONFTEST_"
 
+func TestNewWithOptions(t *testing.T) {
+	opts := Options{EnvPrefix: EnvTestPrefix}
+
+	os.Setenv(EnvTestPrefix+"D", "EnvD")
+
+	flagD := flag.String("d", "default", "")
+	flagE := flag.Bool("e", true, "")
+
+	conf, err := NewWithOptions(&opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	conf.ParseAll()
+
+	if *flagD != "EnvD" {
+		t.Errorf("flagD found %v, expected 'EnvD'", *flagD)
+	}
+	if !*flagE {
+		t.Errorf("flagE found %v, expected true", *flagE)
+	}
+}
+
 func TestParse_Global(t *testing.T) {
 	resetForTesting("")
 
@@ -180,7 +202,8 @@ func TestDelete(t *testing.T) {
 }
 
 func parse(t *testing.T, filename string) *GlobalConf {
-	conf, err := NewWithFilename(filename)
+	opts := Options{Filename: filename}
+	conf, err := NewWithOptions(&opts)
 	if err != nil {
 		t.Error(err)
 	}
