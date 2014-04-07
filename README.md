@@ -21,8 +21,18 @@ globalconf.New("appname") // loads from ~/.config/<appname>/config.ini
 If you don't prefer the default location you can load from a specified path as well.
 
 ~~~ go
-opts := globalconf.Options{Filename: "/path/to/config/file"}
-globalconf.NewWithOptions(&opts)
+globalconf.NewWithOptions(&globalconf.Options{
+	Filename: "/path/to/config/file",
+})
+~~~
+
+You may like to override configuration with env variables. See "Environment variables" header to see how to it works.
+
+~~~ go
+globalconf.NewWithOptions(&globalconf.Options{
+	Filename: "/path/to/config/file",
+	EnvPrefix: "APPCONF_"
+})
 ~~~
 
 ### Parsing flag values
