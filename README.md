@@ -30,8 +30,8 @@ You may like to override configuration with env variables. See "Environment vari
 
 ~~~ go
 globalconf.NewWithOptions(&globalconf.Options{
-	Filename: "/path/to/config/file",
-	EnvPrefix: "APPCONF_"
+	Filename:  "/path/to/config/file",
+	EnvPrefix: "APPCONF_",
 })
 ~~~
 
