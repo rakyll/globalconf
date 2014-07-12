@@ -67,6 +67,17 @@ func TestParse_Global(t *testing.T) {
 	}
 }
 
+func TestParse_GlobalWithDottedFlagname(t *testing.T) {
+	resetForTesting("")
+	os.Setenv(envTestPrefix+"SOME_VALUE", "some-value")
+	flagSomeValue := flag.String("some.value", "", "")
+
+	parse(t, "./testdata/global.ini", envTestPrefix)
+	if *flagSomeValue != "some-value" {
+		t.Errorf("flagSomeValue found %v, some-value expected", *flagSomeValue)
+	}
+}
+
 func TestParse_GlobalOverwrite(t *testing.T) {
 	resetForTesting("-b=7.6")
 	flagB := flag.Float64("b", 0.0, "")
