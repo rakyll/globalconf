@@ -8,6 +8,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/imdario/mergo"
 	ini "github.com/rakyll/goini"
 )
 
@@ -29,27 +30,29 @@ type Options struct {
 	EnvPrefix string
 }
 
+func ParseFile(Filename string) (d ini.Dict, err error) {
+	if Filename != "" {
+		d, err = ini.Load(Filename)
+	} else {
+		d = make(ini.Dict, 0)
+	}
+	return
+}
+
 // NewWithOptions creates a GlobalConf from the provided
 // Options. The caller is responsible for creating any
 // referenced config files.
 func NewWithOptions(opts *Options) (g *GlobalConf, err error) {
 	Register("", flag.CommandLine)
 
-	var dict ini.Dict
-	if opts.Filename != "" {
-		dict, err = ini.Load(opts.Filename)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		dict = make(ini.Dict, 0)
-	}
+	dict, err := ParseFile(opts.Filename)
 
-	return &GlobalConf{
+	g = &GlobalConf{
 		Filename:  opts.Filename,
 		EnvPrefix: opts.EnvPrefix,
 		dict:      &dict,
-	}, nil
+	}
+	return
 }
 
 // Opens/creates a config file for the specified appName.
@@ -59,24 +62,45 @@ func New(appName string) (g *GlobalConf, err error) {
 	if u, err = user.Current(); u == nil {
 		return
 	}
+	Register("", flag.CommandLine)
+
+	userDirPath := path.Join(u.HomeDir, ".config", appName)
+	userFilePath := path.Join(userDirPath, defaultConfigFileName)
+
+	globalFilePath := path.Join("/etc", appName, defaultConfigFileName)
+
 	// Create config file's directory.
-	dirPath := path.Join(u.HomeDir, ".config", appName)
-	if err = os.MkdirAll(dirPath, 0755); err != nil {
+	if err = os.MkdirAll(userDirPath, 0755); err != nil {
 		return
 	}
 	// Touch a config file if it doesn't exit.
-	filePath := path.Join(dirPath, defaultConfigFileName)
-	if _, err = os.Stat(filePath); err != nil {
+	if _, err = os.Stat(userFilePath); err != nil {
 		if !os.IsNotExist(err) {
 			return
 		}
 		// create file
-		if err = ioutil.WriteFile(filePath, []byte{}, 0644); err != nil {
+		if err = ioutil.WriteFile(userFilePath, []byte{}, 0644); err != nil {
 			return
 		}
 	}
-	opts := Options{Filename: filePath}
-	return NewWithOptions(&opts)
+
+	d := make(ini.Dict, 0)
+	if udict, uerr := ParseFile(userFilePath); uerr == nil {
+		if err = mergo.Merge(&d, udict); err != nil {
+			return
+		}
+	}
+	if gdict, gerr := ParseFile(globalFilePath); gerr == nil {
+		if err = mergo.Merge(&d, gdict); err != nil {
+			return
+		}
+	}
+
+	g = &GlobalConf{
+		Filename: userFilePath,
+		dict:     &d,
+	}
+	return
 }
 
 // Sets a flag's value and persists the changes to the disk.
