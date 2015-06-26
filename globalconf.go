@@ -2,13 +2,12 @@ package globalconf
 
 import (
 	"flag"
+	homedir "github.com/mitchellh/go-homedir"
+	ini "github.com/rakyll/goini"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path"
 	"strings"
-
-	ini "github.com/rakyll/goini"
 )
 
 const (
@@ -55,12 +54,13 @@ func NewWithOptions(opts *Options) (g *GlobalConf, err error) {
 // Opens/creates a config file for the specified appName.
 // The path to config file is ~/.config/appName/config.ini.
 func New(appName string) (g *GlobalConf, err error) {
-	var u *user.User
-	if u, err = user.Current(); u == nil {
+	hmdr, err := homedir.Dir()
+	if err != nil {
 		return
 	}
+
 	// Create config file's directory.
-	dirPath := path.Join(u.HomeDir, ".config", appName)
+	dirPath := path.Join(hmdr, ".config", appName)
 	if err = os.MkdirAll(dirPath, 0755); err != nil {
 		return
 	}
