@@ -81,7 +81,6 @@ Custom flagset values should be provided in their own segment. Getting back to t
 
 If an EnvPrefix is provided, environment variables will take precedence over values in the configuration file.
 Set the `EnvPrefix` option when calling `globalconf.NewWithOptions`.
-An `EnvPrefix` will only be used if it is a non-empty string.
 Command line flags will override the environment variables.
 
 ~~~ go
