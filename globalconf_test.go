@@ -109,7 +109,7 @@ func TestParse_GlobalWithEmptyValue(t *testing.T) {
 	{
 		flagC := flag.String("c", "", "")
 
-		parse(t, "./testdata/global.ini", "")
+		parse(t, "./testdata/global.ini", envTestPrefix)
 		t.Log("\t\tExpect flagC to an empty string and not be the value Hello World from the INI file")
 		if *flagC != "" {
 			t.Errorf("\t\tflagC found %v, expected an empty string", *flagC)
