@@ -104,8 +104,7 @@ func (g *GlobalConf) Delete(flagSetName, flagName string) error {
 // if the flag is not in the file.
 func (g *GlobalConf) ParseSet(flagSetName string, set *flag.FlagSet) {
 	set.VisitAll(func(f *flag.Flag) {
-		val, exists := getEnv(g.EnvPrefix, flagSetName, f.Name)
-		if exists {
+		if val, ok := getEnv(g.EnvPrefix, flagSetName, f.Name); ok {
 			set.Set(f.Name, val)
 			return
 		}
@@ -127,13 +126,12 @@ func (g *GlobalConf) Parse() {
 			alreadySet[f.Name] = true
 		})
 		set.VisitAll(func(f *flag.Flag) {
-			// if not already set, set it from dict if exists
+			// if not already set, set it from dict if ok
 			if alreadySet[f.Name] {
 				return
 			}
 
-			val, exists := getEnv(g.EnvPrefix, name, f.Name)
-			if exists {
+			if val, ok := getEnv(g.EnvPrefix, name, f.Name); ok {
 				set.Set(f.Name, val)
 				return
 			}

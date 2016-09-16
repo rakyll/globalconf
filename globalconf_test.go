@@ -96,24 +96,19 @@ func TestParse_GlobalWithDottedFlagname(t *testing.T) {
 	}
 }
 
+// Given the need to test overwriting a flag with an environmental variable set to an empty string
+// Reset the flags and clear the env.
+// Set the env var for the c flag to an empty string.
+// Expect flagC to an empty string and not be the value Hello World from the INI file.
 func TestParse_GlobalWithEmptyValue(t *testing.T) {
-	t.Log("Given the need to test overwriting a flag with an environmental variable set to an empty string")
-	t.Log("\tReset the flags and clear the env")
-	{
-		resetForTesting("")
-	}
+	resetForTesting("")
 
-	t.Log("\tSet the env var for the c flag to an empty string")
 	os.Setenv(envTestPrefix+"C", "")
-	t.Log("\tDefine the c flag and parse the INI file")
-	{
-		flagC := flag.String("c", "", "")
+	flagC := flag.String("c", "", "")
 
-		parse(t, "./testdata/global.ini", envTestPrefix)
-		t.Log("\t\tExpect flagC to an empty string and not be the value Hello World from the INI file")
-		if *flagC != "" {
-			t.Errorf("\t\tflagC found %v, expected an empty string", *flagC)
-		}
+	parse(t, "./testdata/global.ini", envTestPrefix)
+	if got, want := *flagC, ""; got != want {
+		t.Errorf("got flag = %q, want empty string", got)
 	}
 }
 
