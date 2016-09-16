@@ -169,7 +169,7 @@ func getEnv(envPrefix, flagSetName, flagName string) (string, bool) {
 	return os.LookupEnv(envKey)
 }
 
-// Register register a flag set to be parsed. Register all flag sets
+// Register registers a flag set to be parsed. Register all flag sets
 // before calling this function. flag.CommandLine is automatically
 // registered.
 func Register(flagSetName string, set *flag.FlagSet) {
