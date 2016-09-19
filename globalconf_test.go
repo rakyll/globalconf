@@ -201,6 +201,71 @@ func TestParse_GlobalAndCustomOverwrite(t *testing.T) {
 	}
 }
 
+// Ensure ParseSet sets and possibly overwrites already set flags of a FlagSet
+// with the values from an ini file.
+func TestParseSetOverwriteCustom(t *testing.T) {
+	resetForTesting("")
+
+	name := "custom"
+	custom := flag.NewFlagSet(name, flag.ExitOnError)
+	flagD := custom.String("d", "", "")
+
+	Register(name, custom)
+	parse(t, "./testdata/globalandcustom.ini", "")
+
+	if got, want := *flagD, "Hello d"; got != want {
+    	t.Errorf("got flagD = %q, want Hello d", got)
+	}
+	
+	opts := Options{
+		Filename:  "./testdata/customalt.ini",
+		EnvPrefix: "CUSTOMCONFTEST_",
+	}
+	conf, err := NewWithOptions(&opts)
+	if err != nil {
+		t.Error(err)
+	}
+	conf.ParseSet("custom", custom)
+
+	if got, want := *flagD, "Overwritten d"; got != want {
+    	t.Errorf("got flagD = %q, want Overwritten d", got)
+	}
+}
+
+// Ensure ParseSet sets and possibly overwrites already set flags of a FlagSet
+// with the values from environment.
+func TestParseSetOverwriteCustomEnv(t *testing.T) {
+	resetForTesting("")
+	customPrefix := "CUSTOMCONFTEST_"
+	os.Setenv(customPrefix+"CUSTOM_F", "Overwritten f env")
+	os.Setenv(envTestPrefix+"CUSTOM_F", "Hello f env")
+
+	name := "custom"
+	custom := flag.NewFlagSet(name, flag.ExitOnError)
+	flagF := custom.String("f", "", "")
+
+	Register(name, custom)
+	parse(t, "./testdata/globalandcustom.ini", envTestPrefix)
+
+	if got, want := *flagF, "Hello f env"; got != want {
+    	t.Errorf("got flagF = %q, want Hello f env", got)
+	}
+
+	opts := Options{
+		Filename:  "./testdata/customalt.ini",
+		EnvPrefix: customPrefix,
+	}
+	conf, err := NewWithOptions(&opts)
+	if err != nil {
+		t.Error(err)
+	}
+	conf.ParseSet("custom", custom)
+
+	if got, want := *flagF, "Overwritten f env"; got != want {
+    	t.Errorf("got flagF = %q, want Overwritten f env", got)
+	}
+}
+
 func TestSet(t *testing.T) {
 	resetForTesting()
 	file, _ := ioutil.TempFile("", "")
