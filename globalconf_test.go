@@ -214,9 +214,9 @@ func TestParseSetOverwriteCustom(t *testing.T) {
 	parse(t, "./testdata/globalandcustom.ini", "")
 
 	if got, want := *flagD, "Hello d"; got != want {
-    	t.Errorf("got flagD = %q, want Hello d", got)
+		t.Errorf("got flagD = %q, want Hello d", got)
 	}
-	
+
 	opts := Options{
 		Filename:  "./testdata/customalt.ini",
 		EnvPrefix: "CUSTOMCONFTEST_",
@@ -228,7 +228,7 @@ func TestParseSetOverwriteCustom(t *testing.T) {
 	conf.ParseSet("custom", custom)
 
 	if got, want := *flagD, "Overwritten d"; got != want {
-    	t.Errorf("got flagD = %q, want Overwritten d", got)
+		t.Errorf("got flagD = %q, want Overwritten d", got)
 	}
 }
 
@@ -248,7 +248,7 @@ func TestParseSetOverwriteCustomEnv(t *testing.T) {
 	parse(t, "./testdata/globalandcustom.ini", envTestPrefix)
 
 	if got, want := *flagD, "Hello d env"; got != want {
-    	t.Errorf("got flagD = %q, want Hello d env", got)
+		t.Errorf("got flagD = %q, want Hello d env", got)
 	}
 
 	opts := Options{
@@ -262,7 +262,7 @@ func TestParseSetOverwriteCustomEnv(t *testing.T) {
 	conf.ParseSet("custom", custom)
 
 	if got, want := *flagD, "Overwritten d env"; got != want {
-    	t.Errorf("got flagD = %q, want Overwritten d env", got)
+		t.Errorf("got flagD = %q, want Overwritten d env", got)
 	}
 }
 
