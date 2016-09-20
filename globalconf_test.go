@@ -282,6 +282,40 @@ func TestParseSetOverwriteCustomEnv(t *testing.T) {
 	}
 }
 
+// Ensure ParseSet sets and possibly overwrites already set flags of a FlagSet
+// with the values from environment even if empty.
+func TestParseSetOverwriteEmptyCustomEnv(t *testing.T) {
+	resetForTesting("")
+	customPrefix := "CUSTOMCONFTEST_"
+	os.Setenv(customPrefix+"CUSTOM_D", "")
+	os.Setenv(envTestPrefix+"CUSTOM_D", "Hello d env")
+
+	name := "custom"
+	custom := flag.NewFlagSet(name, flag.ExitOnError)
+	flagD := custom.String("D", "", "")
+
+	Register(name, custom)
+	parse(t, "./testdata/globalandcustom.ini", envTestPrefix)
+
+	if got, want := *flagD, "Hello d env"; got != want {
+		t.Errorf("got flagD = %q, want Hello d env", got)
+	}
+
+	opts := Options{
+		Filename:  "./testdata/customalt.ini",
+		EnvPrefix: customPrefix,
+	}
+	conf, err := NewWithOptions(&opts)
+	if err != nil {
+		t.Error(err)
+	}
+	conf.ParseSet("custom", custom)
+
+	if got, want := *flagD, ""; got != want {
+		t.Errorf("got flagD = %q, want empty string", got)
+	}
+}
+
 func TestSet(t *testing.T) {
 	resetForTesting()
 	file, _ := ioutil.TempFile("", "")
