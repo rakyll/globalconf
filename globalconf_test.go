@@ -217,7 +217,7 @@ func TestParse_GlobalAndCustomOverwrite(t *testing.T) {
 	}
 }
 
-// Ensure ParseSet sets and possibly overwrites already set flags of a FlagSet
+// Ensure ParseSet sets and overwrites already set flags of a FlagSet
 // with the values from an ini file.
 func TestParseSetOverwriteCustom(t *testing.T) {
 	resetForTesting("")
@@ -248,7 +248,7 @@ func TestParseSetOverwriteCustom(t *testing.T) {
 	}
 }
 
-// Ensure ParseSet sets and possibly overwrites already set flags of a FlagSet
+// Ensure ParseSet sets and overwrites already set flags of a FlagSet
 // with the values from environment.
 func TestParseSetOverwriteCustomEnv(t *testing.T) {
 	resetForTesting("")
@@ -282,7 +282,7 @@ func TestParseSetOverwriteCustomEnv(t *testing.T) {
 	}
 }
 
-// Ensure ParseSet sets and possibly overwrites already set flags of a FlagSet
+// Ensure ParseSet sets and overwrites already set flags of a FlagSet
 // with the values from environment even if empty.
 func TestParseSetOverwriteEmptyCustomEnv(t *testing.T) {
 	resetForTesting("")
