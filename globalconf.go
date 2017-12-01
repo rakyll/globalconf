@@ -165,6 +165,8 @@ func getEnv(envPrefix, flagSetName, flagName string) (string, bool) {
 	}
 	flagName = strings.Replace(flagName, ".", "_", -1)
 	flagName = strings.Replace(flagName, "-", "_", -1)
+	flagSetName = strings.Replace(flagSetName, ".", "_", -1)
+	flagSetName = strings.Replace(flagSetName, "-", "_", -1)
 	envKey := strings.ToUpper(envPrefix + flagSetName + flagName)
 	return os.LookupEnv(envKey)
 }
