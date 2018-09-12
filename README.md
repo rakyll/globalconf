@@ -86,7 +86,7 @@ Command line flags will override the environment variables.
 
 ~~~ go
 opts := globalconf.Options{
-	EnvPrefix: "MYAPP_",
+	EnvPrefix: "APPCONF_",
 	Filename:  "/path/to/config",
 }
 conf, err := globalconf.NewWithOptions(&opts)
